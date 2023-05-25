@@ -1,2 +1,10 @@
+*.pyc
 pyenv
 __pycache__
+.idea
+lib/*.pyc
+test.py
+logs/*.log
+k8s
+
+
