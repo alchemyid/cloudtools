@@ -4,6 +4,24 @@ import json
 import os
 import time
 
+
+class get_ecr_auth(object):
+    def on_post(self, req, resp):
+        try:
+            raw = req.context['request']
+            os.environ['AWS_ACCESS_KEY_ID'] = raw['access_key']
+            os.environ['AWS_SECRET_ACCESS_KEY'] = raw['secret_key']
+            os.environ['AWS_DEFAULT_REGION'] = raw['region']
+            
+            ecr = helpers.command("aws ecr get-authorization-token --region "+raw["region"]+"")
+            if type(ecr) is str :
+                j = json.loads(ecr)
+            else:
+                j = ecr
+            resp.status = falcon.HTTP_200
+            resp.context['response'] = j
+        except Exception as e:
+            raise falcon.HTTPError(falcon.HTTP_404, str(e))
 class nodes_stop(object):
     def on_post(self, req, resp):
 
