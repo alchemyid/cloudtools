@@ -13,9 +13,15 @@ class get_ecr_auth(object):
             os.environ['AWS_SECRET_ACCESS_KEY'] = raw['secret_key']
             os.environ['AWS_DEFAULT_REGION'] = raw['region']
             
-            ecr = helpers.command("aws ecr get-authorization-token --region "+raw["region"]+"")
+            ecr = helpers.command("aws ecr get-login-password --region "+raw["region"]+"")
+            account = helpers.command("aws sts get-caller-identity --output json")
+            d = json.loads(account)
             if type(ecr) is str :
-                j = json.loads(ecr)
+                j = {
+                    "user" : "AWS",
+                    "password": ecr,
+                    "endpoint" : d["Account"]+".dkr.ecr."+raw["region"]+".amazonaws.com"
+                }
             else:
                 j = ecr
             resp.status = falcon.HTTP_200
@@ -141,7 +147,7 @@ class ec2_pub_address(object):
             os.environ['AWS_SECRET_ACCESS_KEY'] = raw['secret_key']
             os.environ['AWS_DEFAULT_REGION'] = raw['region']
             filter = "Name=instance-id,Values="+raw["instance-id"]+""
-            ip = helpers.command(" aws ec2 describe-instances --filters "+filter+" --query 'Reservations[].Instances[].[PublicIpAddress]' --output json")
+            ip = helpers.command("aws ec2 describe-instances --filters "+filter+" --query 'Reservations[].Instances[].[PublicIpAddress]' --output json")
             
             if type(ip) is str :
                 j = json.loads(ip)
